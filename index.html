@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jhin Tracker — Ranked Progress</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c10;
+  --bg2: #0f1218;
+  --bg3: #151b24;
+  --bg4: #1c2430;
+  --border: #1e2d3d;
+  --border2: #263548;
+  --gold: #c8a96e;
+  --gold2: #e8c98a;
+  --gold-dim: #7a6340;
+  --blue: #4fc3f7;
+  --blue-dim: #1a4a6e;
+  --green: #4caf82;
+  --green-dim: #1a4a35;
+  --red: #e05c5c;
+  --red-dim: #4a1f1f;
+  --purple: #a78bfa;
+  --text: #c8d8e8;
+  --text2: #7a93a8;
+  --text3: #4a6070;
+  --plat: #9b87d4;
+  --plat-bg: #1e1a35;
+  --oro: #c8a96e;
+  --oro-bg: #2a2010;
+  --plata: #8aa8bc;
+  --plata-bg: #152030;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 60% 40% at 50% -10%, rgba(200,169,110,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 90% 80%, rgba(79,195,247,0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* HEADER */
+.header {
+  position: relative;
+  padding: 2rem 2rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: linear-gradient(180deg, rgba(200,169,110,0.04) 0%, transparent 100%);
+}
+.header-icon {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(200,169,110,0.3);
+}
+.header-text h1 {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gold2);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.header-text p {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+.header-badge {
+  margin-left: auto;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  text-align: center;
+}
+.header-badge .hb-val { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; color: var(--gold); }
+.header-badge .hb-lbl { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+
+/* NAV */
+.nav {
+  display: flex;
+  gap: 2px;
+  padding: 12px 2rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-btn {
+  padding: 8px 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text2);
+  transition: all 0.2s;
+}
+.nav-btn:hover { color: var(--text); background: var(--bg3); }
+.nav-btn.active {
+  background: var(--bg3);
+  border-color: var(--border2);
+  color: var(--gold);
+  box-shadow: 0 0 12px rgba(200,169,110,0.1);
+}
+
+/* MAIN */
+.main { padding: 1.5rem 2rem; max-width: 1200px; position: relative; z-index: 1; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* STAT CARDS */
+.cards-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.4;
+}
+.stat-card .sc-lbl { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
+.stat-card .sc-val { font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700; line-height: 1; }
+.sc-gold { color: var(--gold); }
+.sc-green { color: var(--green); }
+.sc-blue { color: var(--blue); }
+.sc-red { color: var(--red); }
+
+/* TABLE */
+.table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead tr { background: var(--bg3); }
+th {
+  padding: 10px 12px;
+  text-align: left;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr { transition: background 0.15s; }
+tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* BADGES */
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 0.5px;
+}
+.badge-plat { background: var(--plat-bg); color: var(--plat); border: 1px solid #3d2f7a; }
+.badge-gold { background: var(--oro-bg); color: var(--oro); border: 1px solid #5a4020; }
+.badge-silver { background: var(--plata-bg); color: var(--plata); border: 1px solid #1e3a50; }
+.badge-iron { background: #1a1a1a; color: #888; border: 1px solid #333; }
+.badge-serv { background: rgba(79,195,247,0.1); color: var(--blue); border: 1px solid var(--blue-dim); font-size: 10px; padding: 2px 7px; }
+
+/* WIN RATE BAR */
+.wr-wrap { display: flex; align-items: center; gap: 8px; }
+.wr-bar { width: 50px; height: 4px; background: var(--bg4); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.wr-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+.wr-high { color: var(--green); } .wr-mid { color: var(--gold); } .wr-low { color: var(--red); }
+.fill-high { background: var(--green); } .fill-mid { background: var(--gold); } .fill-low { background: var(--red); }
+.lp-pos { color: var(--green); font-family: 'Share Tech Mono', monospace; font-size: 12px; }
+.lp-neg { color: var(--red); font-family: 'Share Tech Mono', monospace; font-size: 12px; }
+
+/* SORT ROW */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.toolbar label { font-size: 12px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+select, input {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 7px 12px;
+  font-size: 13px;
+  font-family: 'Nunito', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+}
+select:focus, input:focus { border-color: var(--gold-dim); }
+input[type=number] { width: 90px; }
+input::placeholder { color: var(--text3); }
+
+/* BUTTONS */
+.btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  background: var(--bg3);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  transition: all 0.2s;
+}
+.btn:hover { border-color: var(--text3); background: var(--bg4); }
+.btn-gold {
+  background: rgba(200,169,110,0.12);
+  border-color: var(--gold-dim);
+  color: var(--gold);
+}
+.btn-gold:hover { background: rgba(200,169,110,0.2); }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn-green { background: var(--green-dim); border-color: #2a6a50; color: var(--green); }
+.btn-red { background: var(--red-dim); border-color: #6a2a2a; color: var(--red); }
+.btn-green:hover { background: #1e5a40; }
+.btn-red:hover { background: #5a1f1f; }
+
+/* FORM CARD */
+.form-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.form-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,169,110,0.3), transparent);
+}
+.form-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 14px;
+}
+.input-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.msg-ok { color: var(--green); font-size: 13px; margin-top: 6px; }
+.msg-err { color: var(--red); font-size: 13px; margin-top: 6px; }
+
+/* CHAMP GRID */
+.champ-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.champ-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.champ-card:hover { border-color: var(--border2); }
+.champ-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+}
+.champ-card.wr-high-card::before { background: var(--green); }
+.champ-card.wr-mid-card::before { background: var(--gold); }
+.champ-card.wr-low-card::before { background: var(--red); }
+.champ-name { font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+.champ-meta { font-size: 11px; color: var(--text3); }
+.champ-wr { font-family: 'Share Tech Mono', monospace; font-size: 16px; font-weight: 700; }
+.champ-actions { display: flex; gap: 6px; margin-top: 2px; }
+
+/* MATCHUP BAR */
+.mu-bar-wrap { height: 6px; background: var(--bg4); border-radius: 3px; overflow: hidden; }
+.mu-bar { height: 100%; border-radius: 3px; }
+
+/* SECTION TITLE */
+.section-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 12px;
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title::before { content: ''; width: 3px; height: 16px; background: var(--gold); border-radius: 2px; display: block; }
+.section-title:first-child { margin-top: 0; }
+
+.empty { color: var(--text3); font-size: 13px; text-align: center; padding: 2.5rem; font-style: italic; }
+
+/* STATS BARS */
+.stat-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.stat-row-name { width: 140px; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
+.stat-row-bar { flex: 1; height: 6px; background: var(--bg4); border-radius: 3px; overflow: hidden; }
+.stat-row-fill { height: 100%; border-radius: 3px; }
+.stat-row-val { width: 50px; text-align: right; font-family: 'Share Tech Mono', monospace; font-size: 12px; flex-shrink: 0; }
+
+@media (max-width: 640px) {
+  .header { padding: 1.2rem; gap: 1rem; }
+  .header-badge { display: none; }
+  .main { padding: 1rem; }
+  .nav { padding: 8px 1rem; gap: 2px; overflow-x: auto; }
+  .nav-btn { padding: 7px 12px; font-size: 12px; white-space: nowrap; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🎯</div>
+  <div class="header-text">
+    <h1>Jhin Tracker</h1>
+    <p>Ranked Progress — Proof that Win Rate > Games Played</p>
+  </div>
+  <div class="header-badge" id="global-wr-badge">
+    <div class="hb-val" id="hb-wr">—%</div>
+    <div class="hb-lbl">Win Rate Global</div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showTab('cuentas')">Cuentas</button>
+  <button class="nav-btn" onclick="showTab('registro')">Registrar</button>
+  <button class="nav-btn" onclick="showTab('matchups')">Matchups</button>
+  <button class="nav-btn" onclick="showTab('stats')">Estadísticas</button>
+</nav>
+
+<div class="main">
+
+<!-- CUENTAS -->
+<div id="cuentas" class="section active">
+  <div class="cards-row" id="summary-cards"></div>
+  <div class="toolbar">
+    <label>Ordenar por</label>
+    <select id="sort-select" onchange="renderTable()">
+      <option value="wr">Win Rate</option>
+      <option value="div">División</option>
+      <option value="nivel">Nivel</option>
+      <option value="wins">Victorias</option>
+      <option value="lp">LP Total</option>
+    </select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Cuenta</th><th>Nickname</th><th>Serv</th><th>Niv</th><th>División</th>
+        <th>W</th><th>L</th><th>Win Rate</th><th>LP±</th><th>LP Total</th><th></th>
+      </tr></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- REGISTRO -->
+<div id="registro" class="section">
+  <div class="form-card">
+    <div class="form-title">Registrar partida</div>
+    <div class="input-row">
+      <select id="reg-cuenta" style="min-width:180px"><option value="">Cuenta...</option></select>
+      <select id="reg-resultado">
+        <option value="win">Victoria ✓</option>
+        <option value="loss">Derrota ✗</option>
+      </select>
+      <input type="number" id="reg-lp" placeholder="LP± (ej: 20)" style="width:130px">
+      <select id="reg-champ" style="min-width:160px"><option value="">ADC enemigo (opcional)</option></select>
+      <button class="btn btn-gold" onclick="registrarPartida()">Registrar partida</button>
+    </div>
+    <div id="reg-msg"></div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Actualizar división o LP total</div>
+    <div class="input-row">
+      <select id="upd-cuenta" style="min-width:180px"><option value="">Cuenta...</option></select>
+      <input id="upd-div" placeholder="División (ej: Oro 2)" style="width:140px">
+      <input type="number" id="upd-lptotal" placeholder="LP total" style="width:100px">
+      <button class="btn" onclick="actualizarCuenta()">Actualizar</button>
+    </div>
+    <div id="upd-msg"></div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Editar Wins / Losses directamente</div>
+    <div class="input-row">
+      <select id="edit-cuenta" style="min-width:180px"><option value="">Cuenta...</option></select>
+      <input type="number" id="edit-w" placeholder="Wins" style="width:80px">
+      <input type="number" id="edit-l" placeholder="Losses" style="width:80px">
+      <button class="btn" onclick="editarWL()">Guardar</button>
+    </div>
+    <div id="edit-msg"></div>
+  </div>
+</div>
+
+<!-- MATCHUPS -->
+<div id="matchups" class="section">
+  <div class="form-card">
+    <div class="form-title">Registrar matchup vs ADC</div>
+    <div class="input-row">
+      <select id="mu-champ" style="min-width:170px"><option value="">Campeón enemigo...</option></select>
+      <select id="mu-resultado">
+        <option value="win">Victoria ✓</option>
+        <option value="loss">Derrota ✗</option>
+      </select>
+      <button class="btn btn-gold" onclick="registrarMatchup()">Registrar</button>
+    </div>
+  </div>
+  <div class="section-title">Todos los matchups</div>
+  <div class="champ-grid" id="champ-grid"></div>
+</div>
+
+<!-- STATS -->
+<div id="stats" class="section">
+  <div class="cards-row" id="stats-cards"></div>
+  <div class="section-title">Top cuentas por win rate</div>
+  <div id="stats-top"></div>
+  <div class="section-title" style="margin-top:1.5rem">Matchups más difíciles</div>
+  <div id="stats-hard"></div>
+  <div class="section-title" style="margin-top:1.5rem">Matchups más favorables</div>
+  <div id="stats-easy"></div>
+</div>
+
+</div><!-- end main -->
+
+<script>
+const DIVS=['Hierro 4','Hierro 3','Hierro 2','Hierro 1','Bronce 4','Bronce 3','Bronce 2','Bronce 1','Plata 4','Plata 3','Plata 2','Plata 1','Oro 4','Oro 3','Oro 2','Oro 1','Platino 4','Platino 3','Platino 2','Platino 1','Esmeralda 4','Esmeralda 3','Esmeralda 2','Esmeralda 1','Diamante 4','Diamante 3','Diamante 2','Diamante 1','Maestro','Gran Maestro','Challenger'];
+const ADCS=['Aphelios','Ashe','Caitlyn','Corki','Draven','Ezreal','Heimerdinger','Jinx','Kai\'Sa','Kalista','Kog\'Maw','Lucian','Miss Fortune','Nilah','Samira','Senna','Seraphine','Sivir','Smolder','Tristana','Twitch','Varus','Vayne','Xayah','Zeri'].sort();
+
+const INIT={
+  cuentas:[
+    {id:1,serv:'LAN',cuenta:'horuzlolmaster',nick:'Im not H ø r μ',nivel:67,div:'Platino 3',wins:28,losses:24,lppm:30,lptotal:60},
+    {id:2,serv:'LAS',cuenta:'horukun1',nick:'lH 0 R Ul',nivel:67,div:'Oro 3',wins:16,losses:9,lppm:30,lptotal:80},
+    {id:3,serv:'LAS',cuenta:'h0rvlash',nick:'H ø r μ',nivel:47,div:'Oro 4',wins:12,losses:13,lppm:29,lptotal:38},
+    {id:4,serv:'LAN',cuenta:'h0rvhelollan',nick:'ıH ø r u',nivel:55,div:'Oro 2',wins:11,losses:6,lppm:30,lptotal:55},
+    {id:5,serv:'LAN',cuenta:'horvlollanmain',nick:'ıH ø r v',nivel:56,div:'Oro 2',wins:8,losses:6,lppm:30,lptotal:60},
+    {id:6,serv:'LAN',cuenta:'h0rvmasteraccount',nick:'h ø r x',nivel:59,div:'Oro 2',wins:11,losses:6,lppm:30,lptotal:41},
+    {id:7,serv:'LAN',cuenta:'h0rvhelolmainlan',nick:'łH ø r μ',nivel:105,div:'Oro 4',wins:6,losses:6,lppm:-10,lptotal:null},
+    {id:8,serv:'LAN',cuenta:'h0rvlolcitooficial',nick:'lHøru',nivel:54,div:'Oro 3',wins:4,losses:5,lppm:-10,lptotal:60},
+    {id:9,serv:'LAN',cuenta:'h0rvlollan',nick:'ıH ø r μ',nivel:101,div:'Oro 4',wins:3,losses:4,lppm:-10,lptotal:null},
+    {id:10,serv:'LAN',cuenta:'horucorvo',nick:'J ø r µ',nivel:53,div:'Oro 4',wins:3,losses:4,lppm:-5,lptotal:null},
+    {id:11,serv:'LAN',cuenta:'h0rvlolcito',nick:'H Ø R Łı',nivel:48,div:'Oro 4',wins:3,losses:4,lppm:-10,lptotal:null},
+    {id:12,serv:'LAN',cuenta:'Horuucsm',nick:'ıh ø r µ',nivel:48,div:'Oro 4',wins:3,losses:4,lppm:-10,lptotal:null},
+    {id:13,serv:'LAN',cuenta:'h0rvlolgame',nick:'J ø r μ',nivel:110,div:'Plata 3',wins:2,losses:6,lppm:-10,lptotal:null},
+    {id:14,serv:'LAN',cuenta:'h0rvlolmainlan1',nick:'lH ø r μ',nivel:58,div:'Plata 3',wins:1,losses:4,lppm:-10,lptotal:null},
+    {id:15,serv:'LAN',cuenta:'h0rvlolmainlan',nick:'IH ø r μ',nivel:49,div:'Oro 4',wins:1,losses:4,lppm:-10,lptotal:null},
+    {id:16,serv:'LAN',cuenta:'h0rvreformed',nick:'h0rv',nivel:48,div:'Plata 1',wins:1,losses:4,lppm:-10,lptotal:null},
+    {id:17,serv:'LAS',cuenta:'horvlolmainlas',nick:'H 0 R V',nivel:49,div:'Plata 1',wins:1,losses:4,lppm:-10,lptotal:null},
+  ],
+  matchups:{}
+};
+
+let data;
+try{
+  const s=localStorage.getItem('jhin_tracker_v2');
+  data=s?JSON.parse(s):JSON.parse(JSON.stringify(INIT));
+}catch(e){ data=JSON.parse(JSON.stringify(INIT)); }
+
+function save(){ try{localStorage.setItem('jhin_tracker_v2',JSON.stringify(data));}catch(e){} }
+function wr(w,l){ const t=w+l; return t===0?0:Math.round(w/t*100); }
+function wrCls(r){ return r>=55?'wr-high':r>=45?'wr-mid':'wr-low'; }
+function fillCls(r){ return r>=55?'fill-high':r>=45?'fill-mid':'fill-low'; }
+function divScore(d){ const i=DIVS.findIndex(x=>x.toLowerCase()===d.toLowerCase()); return i>=0?i:0; }
+function divBadge(d){
+  const dl=d.toLowerCase();
+  if(dl.includes('plat')||dl.includes('esm')||dl.includes('dia')||dl.includes('maestro')||dl.includes('chall')) return 'badge-plat';
+  if(dl.includes('oro')) return 'badge-gold';
+  if(dl.includes('plata')) return 'badge-silver';
+  return 'badge-iron';
+}
+
+function populateSelects(){
+  const opts=data.cuentas.map(c=>`<option value="${c.id}">${c.cuenta} (${c.serv})</option>`).join('');
+  ['reg-cuenta','upd-cuenta','edit-cuenta'].forEach(id=>{
+    document.getElementById(id).innerHTML='<option value="">Cuenta...</option>'+opts;
+  });
+  const champOpts=ADCS.map(c=>`<option value="${c}">${c}</option>`).join('');
+  document.getElementById('reg-champ').innerHTML='<option value="">ADC enemigo (opcional)</option>'+champOpts;
+  document.getElementById('mu-champ').innerHTML='<option value="">Campeón enemigo...</option>'+champOpts;
+}
+
+function renderSummary(){
+  const tw=data.cuentas.reduce((a,c)=>a+c.wins,0);
+  const tl=data.cuentas.reduce((a,c)=>a+c.losses,0);
+  const r=wr(tw,tl);
+  document.getElementById('hb-wr').textContent=r+'%';
+  document.getElementById('hb-wr').className='hb-val '+wrCls(r);
+  document.getElementById('summary-cards').innerHTML=`
+    <div class="stat-card"><div class="sc-lbl">Cuentas</div><div class="sc-val sc-blue">${data.cuentas.length}</div></div>
+    <div class="stat-card"><div class="sc-lbl">Victorias</div><div class="sc-val sc-green">${tw}</div></div>
+    <div class="stat-card"><div class="sc-lbl">Derrotas</div><div class="sc-val sc-red">${tl}</div></div>
+    <div class="stat-card"><div class="sc-lbl">Win Rate</div><div class="sc-val ${wrCls(r)}">${r}%</div></div>
+    <div class="stat-card"><div class="sc-lbl">Partidas</div><div class="sc-val sc-gold">${tw+tl}</div></div>
+  `;
+}
+
+function renderTable(){
+  const sort=document.getElementById('sort-select').value;
+  const sorted=[...data.cuentas].sort((a,b)=>{
+    if(sort==='wr') return wr(b.wins,b.losses)-wr(a.wins,a.losses);
+    if(sort==='nivel') return b.nivel-a.nivel;
+    if(sort==='wins') return b.wins-a.wins;
+    if(sort==='lp') return (b.lptotal||0)-(a.lptotal||0);
+    if(sort==='div') return divScore(b.div)-divScore(a.div);
+    return 0;
+  });
+  document.getElementById('table-body').innerHTML=sorted.map(c=>{
+    const r=wr(c.wins,c.losses);
+    const lpStr=c.lppm>=0
+      ?`<span class="lp-pos">+${c.lppm}</span>`
+      :`<span class="lp-neg">${c.lppm}</span>`;
+    return `<tr>
+      <td style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2)">${c.cuenta}</td>
+      <td style="font-size:12px">${c.nick}</td>
+      <td><span class="badge badge-serv">${c.serv}</span></td>
+      <td style="color:var(--text2)">${c.nivel}</td>
+      <td><span class="badge ${divBadge(c.div)}">${c.div}</span></td>
+      <td style="color:var(--green);font-weight:600">${c.wins}</td>
+      <td style="color:var(--red)">${c.losses}</td>
+      <td>
+        <div class="wr-wrap">
+          <div class="wr-bar"><div class="wr-fill ${fillCls(r)}" style="width:${r}%"></div></div>
+          <span class="${wrCls(r)}" style="font-family:'Share Tech Mono',monospace;font-size:12px">${r}%</span>
+        </div>
+      </td>
+      <td>${lpStr}</td>
+      <td style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--gold)">${c.lptotal!==null?c.lptotal:'—'}</td>
+      <td><button class="btn btn-sm" onclick="quickEditLP(${c.id})">LP</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function quickEditLP(id){
+  const c=data.cuentas.find(x=>x.id===id);
+  const v=prompt(`LP total para "${c.cuenta}" (actual: ${c.lptotal!==null?c.lptotal:'—'})`);
+  if(v!==null&&v.trim()!==''){c.lptotal=parseInt(v)||0;save();renderAll();}
+}
+
+function registrarPartida(){
+  const cid=parseInt(document.getElementById('reg-cuenta').value);
+  const res=document.getElementById('reg-resultado').value;
+  const lp=document.getElementById('reg-lp').value;
+  const champ=document.getElementById('reg-champ').value;
+  const msg=document.getElementById('reg-msg');
+  if(!cid){msg.className='msg-err';msg.textContent='⚠ Selecciona una cuenta.';return;}
+  const c=data.cuentas.find(x=>x.id===cid);
+  if(res==='win')c.wins++;else c.losses++;
+  if(lp!=='')c.lppm=parseInt(lp)||0;
+  if(champ){
+    if(!data.matchups[champ])data.matchups[champ]={wins:0,losses:0};
+    if(res==='win')data.matchups[champ].wins++;else data.matchups[champ].losses++;
+  }
+  save();renderAll();
+  msg.className='msg-ok';
+  msg.textContent=`✓ Partida registrada — ${c.cuenta}${champ?' vs '+champ:''}`;
+  setTimeout(()=>msg.textContent='',4000);
+}
+
+function registrarMatchup(){
+  const champ=document.getElementById('mu-champ').value;
+  const res=document.getElementById('mu-resultado').value;
+  if(!champ){alert('Selecciona un campeón');return;}
+  if(!data.matchups[champ])data.matchups[champ]={wins:0,losses:0};
+  if(res==='win')data.matchups[champ].wins++;else data.matchups[champ].losses++;
+  save();renderChampGrid();renderStats();
+}
+
+function actualizarCuenta(){
+  const cid=parseInt(document.getElementById('upd-cuenta').value);
+  const div=document.getElementById('upd-div').value.trim();
+  const lp=document.getElementById('upd-lptotal').value;
+  const msg=document.getElementById('upd-msg');
+  if(!cid){msg.className='msg-err';msg.textContent='⚠ Selecciona una cuenta.';return;}
+  const c=data.cuentas.find(x=>x.id===cid);
+  if(div)c.div=div;
+  if(lp!=='')c.lptotal=parseInt(lp);
+  save();renderAll();
+  msg.className='msg-ok';msg.textContent=`✓ Actualizado: ${c.cuenta}`;
+  setTimeout(()=>msg.textContent='',4000);
+}
+
+function editarWL(){
+  const cid=parseInt(document.getElementById('edit-cuenta').value);
+  const w=document.getElementById('edit-w').value;
+  const l=document.getElementById('edit-l').value;
+  const msg=document.getElementById('edit-msg');
+  if(!cid){msg.className='msg-err';msg.textContent='⚠ Selecciona una cuenta.';return;}
+  const c=data.cuentas.find(x=>x.id===cid);
+  if(w!=='')c.wins=parseInt(w)||0;
+  if(l!=='')c.losses=parseInt(l)||0;
+  save();renderAll();
+  msg.className='msg-ok';msg.textContent=`✓ Wins/Losses actualizados: ${c.cuenta}`;
+  setTimeout(()=>msg.textContent='',4000);
+}
+
+function renderChampGrid(){
+  const entries=Object.entries(data.matchups).filter(([,m])=>m.wins+m.losses>0);
+  const grid=document.getElementById('champ-grid');
+  if(!entries.length){grid.innerHTML='<div class="empty">Aún no hay matchups registrados.<br>Registra partidas indicando el ADC enemigo.</div>';return;}
+  entries.sort((a,b)=>wr(a[1].wins,a[1].losses)-wr(b[1].wins,b[1].losses));
+  grid.innerHTML=entries.map(([ch,m])=>{
+    const r=wr(m.wins,m.losses);
+    const cls=r>=55?'wr-high-card':r>=45?'wr-mid-card':'wr-low-card';
+    return `<div class="champ-card ${cls}">
+      <div class="champ-name">${ch}</div>
+      <div class="champ-meta">${m.wins}W / ${m.losses}L — ${m.wins+m.losses} partidas</div>
+      <div class="mu-bar-wrap"><div class="mu-bar ${fillCls(r)}" style="width:${r}%"></div></div>
+      <div class="champ-wr ${wrCls(r)}">${r}%</div>
+      <div class="champ-actions">
+        <button class="btn btn-sm btn-green" onclick="addMu('${ch}','win')" style="flex:1">+W</button>
+        <button class="btn btn-sm btn-red" onclick="addMu('${ch}','loss')" style="flex:1">+L</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addMu(ch,res){
+  if(!data.matchups[ch])data.matchups[ch]={wins:0,losses:0};
+  if(res==='win')data.matchups[ch].wins++;else data.matchups[ch].losses++;
+  save();renderChampGrid();renderStats();
+}
+
+function renderStats(){
+  const tw=data.cuentas.reduce((a,c)=>a+c.wins,0);
+  const tl=data.cuentas.reduce((a,c)=>a+c.losses,0);
+  const mu=Object.values(data.matchups).reduce((a,m)=>a+(m.wins+m.losses),0);
+  document.getElementById('stats-cards').innerHTML=`
+    <div class="stat-card"><div class="sc-lbl">Partidas totales</div><div class="sc-val sc-gold">${tw+tl}</div></div>
+    <div class="stat-card"><div class="sc-lbl">Win Rate global</div><div class="sc-val ${wrCls(wr(tw,tl))}">${wr(tw,tl)}%</div></div>
+    <div class="stat-card"><div class="sc-lbl">Cuentas activas</div><div class="sc-val sc-blue">${data.cuentas.filter(c=>c.wins+c.losses>0).length}</div></div>
+    <div class="stat-card"><div class="sc-lbl">Matchups jugados</div><div class="sc-val">${mu}</div></div>
+    <div class="stat-card"><div class="sc-lbl">ADCs estudiados</div><div class="sc-val sc-purple" style="color:var(--purple)">${Object.keys(data.matchups).length}</div></div>
+  `;
+  const topC=[...data.cuentas].filter(c=>c.wins+c.losses>0).sort((a,b)=>wr(b.wins,b.losses)-wr(a.wins,a.losses)).slice(0,7);
+  const maxWR=topC.length?wr(topC[0].wins,topC[0].losses):100;
+  document.getElementById('stats-top').innerHTML=topC.length
+    ?topC.map(c=>{const r=wr(c.wins,c.losses);return`<div class="stat-row">
+      <div class="stat-row-name">${c.cuenta}</div>
+      <div class="stat-row-bar"><div class="stat-row-fill ${fillCls(r)}" style="width:${(r/Math.max(maxWR,1)*100).toFixed(0)}%"></div></div>
+      <div class="stat-row-val ${wrCls(r)}">${r}%</div>
+    </div>`;}).join('')
+    :'<div class="empty">Sin datos</div>';
+
+  const muList=Object.entries(data.matchups).filter(([,m])=>m.wins+m.losses>=2);
+  const hard=muList.sort((a,b)=>wr(a[1].wins,a[1].losses)-wr(b[1].wins,b[1].losses)).slice(0,5);
+  const easy=[...muList].sort((a,b)=>wr(b[1].wins,b[1].losses)-wr(a[1].wins,a[1].losses)).slice(0,5);
+  function muRows(list){
+    if(!list.length) return '<div class="empty">Necesitas al menos 2 partidas por ADC</div>';
+    return list.map(([ch,m])=>{const r=wr(m.wins,m.losses);return`<div class="stat-row">
+      <div class="stat-row-name">${ch}</div>
+      <div class="stat-row-bar"><div class="stat-row-fill ${fillCls(r)}" style="width:${r}%"></div></div>
+      <div class="stat-row-val ${wrCls(r)}">${r}%</div>
+    </div>`;}).join('');
+  }
+  document.getElementById('stats-hard').innerHTML=muRows(hard);
+  document.getElementById('stats-easy').innerHTML=muRows(easy);
+}
+
+function renderAll(){renderSummary();renderTable();renderChampGrid();renderStats();populateSelects();}
+
+function showTab(id){
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{
+    b.classList.toggle('active',['cuentas','registro','matchups','stats'][i]===id);
+  });
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+renderAll();
+</script>
+</body>
+</html>
