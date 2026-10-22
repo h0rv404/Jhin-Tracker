@@ -1,0 +1,10 @@
+import {env} from 'cloudflare:workers';
+export function owner(request:Request){const id=request.headers.get('oai-authenticated-user-id');if(!id)throw Object.assign(new Error('Sign into this private tracker to connect or sync Riot.'),{status:401});if(request.method!=='GET'){const origin=request.headers.get('origin');if(origin&&origin!==new URL(request.url).origin)throw Object.assign(new Error('Request origin rejected.'),{status:403});}return id;}
+export function reply(data:unknown,status=200){return Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});}
+export function failure(error:unknown){const e=error as Error&{status?:number};return reply({error:e.message||'The request failed.'},e.status||400);}
+async function aes(){const secret=env.RIOT_KEY_ENCRYPTION_SECRET;if(!secret)throw Error('Server connection setup is unavailable.');const bytes=new TextEncoder().encode(secret);const hash=await crypto.subtle.digest('SHA-256',bytes);return crypto.subtle.importKey('raw',hash,'AES-GCM',false,['encrypt','decrypt']);}
+const b64=(data:Uint8Array)=>btoa(String.fromCharCode(...data));
+const bytes=(raw:string)=>Uint8Array.from(atob(raw),c=>c.charCodeAt(0));
+export async function seal(raw:string,user:string){const iv=crypto.getRandomValues(new Uint8Array(12));const data=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode(user)},await aes(),new TextEncoder().encode(raw));return b64(iv)+'.'+b64(new Uint8Array(data));}
+export async function keyFor(user:string){if(env.RIOT_API_KEY)return env.RIOT_API_KEY;const row=await env.DB!.prepare('SELECT encrypted_key FROM riot_connections WHERE user_id = ?').bind(user).first<{encrypted_key:string}>();if(!row)throw Object.assign(new Error('Connect a Riot API key first. Open Connect Riot; this is not your Riot password.'),{status:428});const [iv,body]=row.encrypted_key.split('.');const data=await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes(iv),additionalData:new TextEncoder().encode(user)},await aes(),bytes(body));return new TextDecoder().decode(data);}
+export {env};
