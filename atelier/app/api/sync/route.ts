@@ -1,0 +1,3 @@
+import {owner,reply,failure,keyFor,env} from '../../../lib/connection';
+import {fetchAccount} from '../../../lib/riot.mjs';
+export async function POST(request:Request){try{const user=owner(request);if(Number(request.headers.get('content-length'))>50000)throw Error('Request too large.');const body=await request.json();const key=await keyFor(user);const now=Date.now();const result=await env.DB!.prepare('UPDATE riot_connections SET last_request = ? WHERE user_id = ? AND last_request < ?').bind(now,user,now-15000).run();if(!env.RIOT_API_KEY&&result.meta.changes===0)throw Object.assign(new Error('Please wait 15 seconds between account syncs.'),{status:429});return reply(await fetchAccount(body,key));}catch(e){return failure(e);}}
