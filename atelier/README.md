@@ -22,7 +22,7 @@ The UI is also usable without the API server: serve `public/` as a static site t
 6. Create a named rune page in **Strategy lab**: choose a keystone and one rune from each primary row, two secondary runes from different rows, and three stat shards. Exactly one matching saved setup is automatically assigned to imported games; ambiguous matches remain unassigned. Strategy labels describe your experiment and do not change actual imported rune snapshots. Bulk assignment is available for unassigned games in the current filters.
 7. Manual entry needs only account and result. LP is optional; expandable sections hold performance and notes. Enemy bot and allied support selectors contain all bundled champions. The catalog is refreshed from Riot Data Dragon when possible, with a bundled patch snapshot for offline use; there is also a Refresh catalog button.
 
-The server enforces authenticated Site identity, same-origin mutation requests, provider host allowlists, bounded batches, a 15-second per-user sync cooldown, and readable Riot rate-limit / expired-key errors. Riot API calls use a header-held API key and fixed provider hosts. No OP.GG/Porofessor scraping is used. Automatic games are fetched on demand; the tracker does not need to stay open while you play.
+The server enforces authenticated Site identity, same-origin mutation requests, provider host allowlists, bounded batches, a 15-second per-user sync cooldown, and readable Riot rate-limit / expired-key errors. Riot API calls use a header-held API key and fixed provider hosts. No third-party profile scraping is used. Automatic games are fetched on demand; the tracker does not need to stay open while you play.
 
 ## First use
 
@@ -71,7 +71,7 @@ Migration subtracts imported recorded wins/losses from original account totals t
 
 ## Profile links and official sync
 
-Accounts support HTTPS URLs on OP.GG and Porofessor domains. Links are shortcuts and do not sync data. OP.GG's help center states its game data is not provided to third parties:
+Accounts support HTTPS URLs on OP.GG and League of Graphs domains. Links are shortcuts and do not sync data. No Riot API key is needed to open those external profiles; the tracker’s Sync button uses the separate Riot connection. Existing v4 workspaces and backups remain supported: the retired Porofessor field is removed during validation and the new League of Graphs link starts empty. OP.GG's help center states its game data is not provided to third parties:
 https://help.op.gg/hc/en-us/articles/31091405109401-Can-I-use-OP-GG-data
 
 The implemented sync uses Riot Account-v1, Summoner-v4, League-v4 and Match-v5 through authenticated server routes. It resolves Riot ID/tag to PUUID, fetches and maps objective Jhin game fields, and deduplicates imports. Real-account live sync cannot be verified until the user supplies their key and full account identity. Tests exercise routing, parsing, error handling, duplicate reconciliation and exact rune matching with synthetic Riot responses.
@@ -85,3 +85,9 @@ Games are local to this browser and origin, not synchronized between devices. Si
 User text is HTML-escaped, external profile URLs are restricted to HTTPS on approved provider domains, links use noopener/noreferrer, and inline JavaScript event handlers are avoided. Google Fonts is an optional external visual dependency; system fonts are the fallback. Runtime charts use inline SVG, without Chart.js or a network dependency.
 
 The Sites hosting manifest and repository are separate from the user's original GitHub repository. No changes have been pushed to that original repository.
+
+## Lane review and comparisons
+
+Open **Review lane** on a Riot-imported ranked Jhin match. The timeline is fetched on demand and its summary is cached in this browser (separate from JSON backups). The review compares lane CS and gold against the opposing ADC when Riot identifies both roles. First completed item timing uses the item's patch catalog and can be unavailable for old matches. The Overview compares recorded games by matchup, support, keystone, or first completed item; filters and sample counts help put the results in context.
+
+**Sync all accounts** saves the remaining queue locally and applies Riot's retry delay when available. Rank changes are based on snapshots between syncs, with LP differences shown within the same division.
