@@ -7,3 +7,14 @@ test('excludes non-Jhin and other queues',()=>{const a=fixture();a.info.queueId=
 test('API key passed only in header; forbidden and rate-limit failures are actionable',async()=>{for(const status of [403,429])await assert.rejects(()=>riotFetch('la1','/test','test-key',async (url,options)=>{assert.equal(options.headers['X-Riot-Token'],'test-key');assert.ok(!url.includes('test-key'));return new Response('{}',{status,headers:{'Retry-After':'30'}});}),status===403?/key|permissions/:/30 seconds/);});
 test('full sync fetches rank and match data and skips known IDs',async()=>{const requests=[];const fake=async (url,options)=>{requests.push(url);let body;if(url.includes('/accounts/'))body={puuid:'player',gameName:'Jhin',tagLine:'LAN'};else if(url.includes('/summoners/'))body={summonerLevel:90};else if(url.includes('/entries/'))body=[{queueType:'RANKED_SOLO_5x5',tier:'GOLD',rank:'II',leaguePoints:75,wins:50,losses:40}];else if(url.includes('/ids?'))body=['LA1_123'];else body=fixture();return Response.json(body);};const first=await fetchAccount({riotId:'Jhin#LAN',region:'LAN'},'test-key',fake);assert.equal(first.rank,'Gold 2');assert.equal(first.matches.length,1);assert.equal(first.nextOffset,1);const next=await fetchAccount({riotId:'Jhin#LAN',region:'LAN',known:['LA1_123'],offset:10},'test-key',fake);assert.equal(next.matches.length,0);assert.ok(requests.some(r=>r.includes('start=10')));});
 test('partial match failures preserve a useful response with a warning',async()=>{const fake=async url=>Response.json(url.includes('/accounts/')?{puuid:'player',gameName:'Jhin',tagLine:'LAN'}:url.includes('/summoners/')?{summonerLevel:40}:url.includes('/entries/')?[]:url.includes('/ids?')?['LA1_123']:{} ,{status:url.endsWith('/LA1_123')?429:200});const result=await fetchAccount({riotId:'Jhin#LAN',region:'LAN'},'test',fake);assert.equal(result.rank,'Unranked');assert.equal(result.warnings.length,1);});
+
+test('lane frames compare only the opposing ADC and capture first death',async()=>{
+ const {mapLane}=await import('../lib/riot.mjs');
+ const info={queueId:420,gameVersion:'16.21.1',participants:[{puuid:'a',championName:'Jhin',teamId:100,teamPosition:'BOTTOM',participantId:1},{championName:'Caitlyn',teamId:200,teamPosition:'BOTTOM',participantId:6}]};
+ const frame={timestamp:600000,participantFrames:{1:{totalGold:3300,minionsKilled:71},6:{totalGold:3500,minionsKilled:68}},events:[{type:'CHAMPION_KILL',victimId:1,timestamp:245000}]};
+ const lane=mapLane({info},{info:{frames:[frame]}},'a');
+ assert.deepEqual(lane.points,[{ms:600000,gold:-200,cs:3}]);
+ assert.equal(lane.firstDeath,245000);
+ info.participants[0].teamPosition='MIDDLE';
+ assert.deepEqual(mapLane({info},{info:{frames:[frame]}},'a').points,[]);
+});
