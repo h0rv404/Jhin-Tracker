@@ -1,7 +1,7 @@
 import {env} from 'cloudflare:workers';
 export function owner(request:Request){const id=request.headers.get('oai-authenticated-user-id');if(!id)throw Object.assign(new Error('Sign into this private tracker to connect or sync Riot.'),{status:401});if(request.method!=='GET'){const origin=request.headers.get('origin');if(origin&&origin!==new URL(request.url).origin)throw Object.assign(new Error('Request origin rejected.'),{status:403});}return id;}
 export function reply(data:unknown,status=200){return Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});}
-export function failure(error:unknown){const e=error as Error&{status?:number};return reply({error:e.message||'The request failed.'},e.status||400);}
+export function failure(error:unknown){const e=error as Error&{status?:number;retryAfter?:number};return reply({retryAfter:e.retryAfter,error:e.message||'The request failed.'},e.status||400);}
 async function aes(){const secret=env.RIOT_KEY_ENCRYPTION_SECRET;if(!secret)throw Error('Server connection setup is unavailable.');const bytes=new TextEncoder().encode(secret);const hash=await crypto.subtle.digest('SHA-256',bytes);return crypto.subtle.importKey('raw',hash,'AES-GCM',false,['encrypt','decrypt']);}
 const b64=(data:Uint8Array)=>btoa(String.fromCharCode(...data));
 const bytes=(raw:string)=>Uint8Array.from(atob(raw),c=>c.charCodeAt(0));
